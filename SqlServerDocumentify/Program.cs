@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace SqlServerDocumentify
@@ -79,7 +80,8 @@ namespace SqlServerDocumentify
 
             var currentTableRow = 4;
             var currentTableColumnRow = 4;
-            var currentColumnRow = 4;
+
+            var allColumns = new List<TableSchema>();
 
             for (var i = 0; i < tables.Count; i++)
             {
@@ -93,6 +95,7 @@ namespace SqlServerDocumentify
                 wsTableDescription.Cells[$"B{currentTableRow}"].Value = table.TableName;
 
                 var schema = GetSchema(connection, table.TableName);
+                allColumns.AddRange(schema);
 
                 wsTableColumnDescription.Cells[$"A{currentTableColumnRow}:E{currentTableColumnRow}"].Style.Fill.PatternType = ExcelFillStyle.Solid;
                 wsTableColumnDescription.Cells[$"A{currentTableColumnRow}:E{currentTableColumnRow}"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
@@ -107,15 +110,21 @@ namespace SqlServerDocumentify
                     wsTableColumnDescription.Cells[$"C{currentTableColumnRow}"].Value = column.ColumnName;
                     wsTableColumnDescription.Cells[$"D{currentTableColumnRow}"].Value = column.DataType;
                     currentTableColumnRow += 1;
-
-                    wsColumnDescription.Cells[$"A{currentColumnRow}"].Value = currentColumnRow - 3;
-                    wsColumnDescription.Cells[$"B{currentColumnRow}"].Value = column.ColumnName;
-                    wsColumnDescription.Cells[$"C{currentColumnRow}"].Value = column.DataType;
-                    currentColumnRow += 1;
                 }
 
                 // prevent overloading database
                 Thread.Sleep(100);
+            }
+
+            allColumns = allColumns.OrderBy(x => x.ColumnName).ToList();
+            var currentColumnRow = 4;
+            for (var j = 0; j < allColumns.Count; j++)
+            {
+                var column = allColumns[j];
+                wsColumnDescription.Cells[$"A{currentColumnRow}"].Value = currentColumnRow - 3;
+                wsColumnDescription.Cells[$"B{currentColumnRow}"].Value = column.ColumnName;
+                wsColumnDescription.Cells[$"C{currentColumnRow}"].Value = column.DataType;
+                currentColumnRow += 1;
             }
 
             wsTableDescription.Column(2).AutoFit();
