@@ -124,7 +124,8 @@ namespace SqlServerDocumentify
 
             wsTableColumnDescription.Column(2).AutoFit();
             wsTableColumnDescription.Column(3).AutoFit();
-            wsTableColumnDescription.Column(4).Width = 40;
+            wsTableColumnDescription.Column(4).AutoFit();
+            wsTableColumnDescription.Column(5).Width = 40;
 
             wsColumnDescription.Column(2).AutoFit();
             wsColumnDescription.Column(3).AutoFit();
